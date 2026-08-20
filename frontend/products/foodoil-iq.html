@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodOil IQ — PitchMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+
+    <header class="navbar">
+        <a class="brand" href="../index.html">
+            <div class="brand-icon">P</div>
+            <div>
+                <h1>PitchMarket</h1>
+                <span>LIVE PITCH TRADING</span>
+            </div>
+        </a>
+
+        <nav class="nav-links">
+            <a class="nav-link" href="../index.html">Market</a>
+            <a class="nav-link" href="../index.html#portfolio">Portfolio</a>
+        </nav>
+
+        <div class="user-section">
+            <div class="balance">
+                <span>AVAILABLE BALANCE</span>
+                <strong class="userBalance">₹10,000</strong>
+            </div>
+            <div class="avatar">P</div>
+        </div>
+    </header>
+
+    <main class="container product-page">
+        <a class="back-link" href="../index.html">← Back to market</a>
+
+        <section class="product-hero">
+            <div class="product-hero-main">
+                <div class="product-logo large">F</div>
+
+                <div>
+                    <span class="section-label">PITCH</span>
+                    <h2>FoodOil IQ</h2>
+                    <p class="team-name large-team">Team Alpha</p>
+                </div>
+            </div>
+
+            <div class="product-stats">
+                <div>
+                    <span>CURRENT PRICE</span>
+                    <strong>₹100</strong>
+                </div>
+                <div>
+                    <span>TOTAL INVESTMENT</span>
+                    <strong id="totalInvestment">₹2,400</strong>
+                </div>
+                <div>
+                    <span>MARKET CHANGE</span>
+                    <strong id="productChange">+0.0%</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="detail-grid">
+            <article class="panel pitch-panel">
+                <span class="section-label">ABOUT THE IDEA</span>
+                <h3>Smarter cooking-oil decisions for households and restaurants.</h3>
+                <p>FoodOil IQ helps users understand oil quality, usage and replacement timing with simple data-driven recommendations.</p>
+
+                <div class="feature-list">
+                    <div>
+                        <span>01</span>
+                        <strong>Problem</strong>
+                        <p>People often replace or reuse cooking oil without a clear quality signal.</p>
+                    </div>
+                    <div>
+                        <span>02</span>
+                        <strong>Solution</strong>
+                        <p>A simple monitoring and recommendation system that turns oil data into practical actions.</p>
+                    </div>
+                    <div>
+                        <span>03</span>
+                        <strong>Opportunity</strong>
+                        <p>A large everyday consumer problem with potential across homes, food businesses and institutional kitchens.</p>
+                    </div>
+                </div>
+            </article>
+
+            <aside class="panel invest-panel">
+                <span class="section-label">BACK THIS IDEA</span>
+                <h3>Invest virtual capital</h3>
+
+                <div class="modal-price">
+                    <span>Available balance</span>
+                    <strong class="userBalance">₹10,000</strong>
+                </div>
+
+                <label for="investmentAmount">Investment Amount</label>
+
+                <div class="amount-input">
+                    <span>₹</span>
+                    <input id="investmentAmount" type="number" min="100" step="100" placeholder="Enter amount">
+                </div>
+
+                <div class="quick-amounts">
+                    <button data-amount="500">₹500</button>
+                    <button data-amount="1000">₹1K</button>
+                    <button data-amount="2500">₹2.5K</button>
+                    <button data-amount="5000">₹5K</button>
+                </div>
+
+                <button id="confirmInvestment" class="invest-confirm">
+                    Invest in FoodOil IQ
+                </button>
+
+                <p class="modal-note">
+                    Virtual investment only. Your balance is stored in this browser.
+                </p>
+            </aside>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        window.PITCHMARKET_PRODUCT_ID = 1;
+    </script>
+    <script src="../app.js"></script>
+</body>
+</html>
