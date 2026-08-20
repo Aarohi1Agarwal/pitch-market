@@ -3,7 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# SQLite database
+# ========================================
+# DATABASE CONFIGURATION
+# ========================================
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///pitchmarket.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -11,12 +14,15 @@ db = SQLAlchemy(app)
 
 
 # ========================================
-# TEAM ACCOUNT
+# TEAM ACCOUNT MODEL
 # ========================================
 
 class Team(db.Model):
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     username = db.Column(
         db.String(50),
@@ -36,7 +42,7 @@ class Team(db.Model):
 
 
 # ========================================
-# HOME
+# HOME ROUTE
 # ========================================
 
 @app.route("/")
@@ -46,7 +52,7 @@ def home():
 
 
 # ========================================
-# CREATE DATABASE
+# CREATE DATABASE TABLES
 # ========================================
 
 with app.app_context():
@@ -55,7 +61,7 @@ with app.app_context():
 
 
 # ========================================
-# RUN SERVER
+# START SERVER
 # ========================================
 
 if __name__ == "__main__":
