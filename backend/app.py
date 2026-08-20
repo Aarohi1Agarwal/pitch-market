@@ -52,12 +52,62 @@ def home():
 
 
 # ========================================
-# CREATE DATABASE TABLES
+# CREATE DEMO TEAM ACCOUNTS
+# ========================================
+
+def create_demo_teams():
+
+    demo_teams = [
+        {
+            "username": "teamalpha",
+            "password": "alpha123",
+            "team_name": "Team Alpha"
+        },
+        {
+            "username": "greenlabs",
+            "password": "green123",
+            "team_name": "Green Labs"
+        },
+        {
+            "username": "dormtech",
+            "password": "dorm123",
+            "team_name": "DormTech"
+        },
+        {
+            "username": "agrivision",
+            "password": "agri123",
+            "team_name": "AgriVision"
+        }
+    ]
+
+    for team_data in demo_teams:
+
+        existing_team = Team.query.filter_by(
+            username=team_data["username"]
+        ).first()
+
+        if not existing_team:
+
+            team = Team(
+                username=team_data["username"],
+                password=team_data["password"],
+                team_name=team_data["team_name"]
+            )
+
+            db.session.add(team)
+
+    db.session.commit()
+
+
+# ========================================
+# CREATE DATABASE + DEMO TEAMS
 # ========================================
 
 with app.app_context():
 
     db.create_all()
+
+    create_demo_teams()
 
 
 # ========================================
