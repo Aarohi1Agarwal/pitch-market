@@ -3,73 +3,82 @@
 // ========================================
 
 
-// ----------------------------------------
-// TEMPORARY DEMO DATA
-// ----------------------------------------
-// This will later come from Flask API.
+// ========================================
+// DEMO PRODUCT DATA
+// ========================================
 
 let products = [
     {
         id: 1,
         name: "FoodOil IQ",
         team: "Team Alpha",
-        price: 124,
+        price: 100,
         startingPrice: 100,
-        investment: 2400,
-        change: 18.4
+        initialInvestment: 2400,
+        totalInvestment: 2400,
+        change: 0
     },
 
     {
         id: 2,
         name: "EcoBottle",
         team: "Green Labs",
-        price: 108,
+        price: 100,
         startingPrice: 100,
-        investment: 1800,
-        change: 8.0
+        initialInvestment: 1800,
+        totalInvestment: 1800,
+        change: 0
     },
 
     {
         id: 3,
         name: "Smart Hostel",
         team: "DormTech",
-        price: 103,
+        price: 100,
         startingPrice: 100,
-        investment: 1200,
-        change: 3.0
+        initialInvestment: 1200,
+        totalInvestment: 1200,
+        change: 0
     },
 
     {
         id: 4,
         name: "FarmSense",
         team: "AgriVision",
-        price: 96,
+        price: 100,
         startingPrice: 100,
-        investment: 900,
-        change: -4.0
+        initialInvestment: 900,
+        totalInvestment: 900,
+        change: 0
     },
 
     {
         id: 5,
         name: "MediTrack",
         team: "HealthX",
-        price: 116,
+        price: 100,
         startingPrice: 100,
-        investment: 2100,
-        change: 16.0
+        initialInvestment: 2100,
+        totalInvestment: 2100,
+        change: 0
     },
 
     {
         id: 6,
         name: "StudyAI",
         team: "EduNova",
-        price: 111,
+        price: 100,
         startingPrice: 100,
-        investment: 1500,
-        change: 11.0
+        initialInvestment: 1500,
+        totalInvestment: 1500,
+        change: 0
     }
 ];
 
+
+// ========================================
+// USER DATA
+// ========================================
 
 let userBalance = 10000;
 
@@ -140,15 +149,86 @@ function formatCurrency(value) {
 
 
 // ========================================
+// FORMAT COMPACT CURRENCY
+// ========================================
+
+function formatCompactCurrency(value) {
+
+    if (value >= 1000000) {
+
+        return (
+            "₹" +
+            (value / 1000000).toFixed(1) +
+            "M"
+        );
+
+    }
+
+    if (value >= 1000) {
+
+        return (
+            "₹" +
+            (value / 1000).toFixed(1) +
+            "K"
+        );
+
+    }
+
+    return formatCurrency(value);
+
+}
+
+
+// ========================================
+// CALCULATE PRODUCT CHANGE
+// ========================================
+//
+// Investment is voting power.
+// Price does NOT change.
+//
+// Example:
+//
+// Initial investment = ₹1800
+// New total investment = ₹2300
+//
+// Change = +27.8%
+//
+// ========================================
+
+function calculateProductChange(product) {
+
+    if (product.initialInvestment <= 0) {
+
+        return 0;
+
+    }
+
+    return (
+        (
+            product.totalInvestment -
+            product.initialInvestment
+        ) /
+        product.initialInvestment
+    ) * 100;
+
+}
+
+
+// ========================================
 // RENDER PRODUCTS
 // ========================================
 
-function renderProducts() {
+function renderProducts(data = products) {
 
     productsGrid.innerHTML = "";
 
 
-    products.forEach(product => {
+    data.forEach(product => {
+
+        // Keep change updated
+        product.change =
+            calculateProductChange(product);
+
 
         const trendClass =
             product.change >= 0
@@ -166,7 +246,8 @@ function renderProducts() {
             document.createElement("article");
 
 
-        card.className = "product-card";
+        card.className =
+            "product-card";
 
 
         card.innerHTML = `
@@ -216,11 +297,11 @@ function renderProducts() {
                 <div class="investment-info">
 
                     <span>
-                        TOTAL INVESTED
+                        TOTAL INVESTMENT
                     </span>
 
                     <strong>
-                        ${formatCurrency(product.investment)}
+                        ${formatCurrency(product.totalInvestment)}
                     </strong>
 
                 </div>
@@ -262,7 +343,7 @@ function updateMarketSummary() {
     const totalVolume =
         products.reduce(
             (sum, product) =>
-                sum + product.investment,
+                sum + product.totalInvestment,
             0
         );
 
@@ -270,7 +351,8 @@ function updateMarketSummary() {
     const topMover =
         Math.max(
             ...products.map(
-                product => product.change
+                product =>
+                    calculateProductChange(product)
             )
         );
 
@@ -280,36 +362,7 @@ function updateMarketSummary() {
 
 
     topMoverElement.textContent =
-        `+${topMover.toFixed(1)}%`;
-
-}
-
-
-function formatCompactCurrency(value) {
-
-    if (value >= 1000000) {
-
-        return (
-            "₹" +
-            (value / 1000000).toFixed(1) +
-            "M"
-        );
-
-    }
-
-
-    if (value >= 1000) {
-
-        return (
-            "₹" +
-            (value / 1000).toFixed(1) +
-            "K"
-        );
-
-    }
-
-
-    return formatCurrency(value);
+        `${topMover >= 0 ? "+" : ""}${topMover.toFixed(1)}%`;
 
 }
 
@@ -317,13 +370,20 @@ function formatCompactCurrency(value) {
 // ========================================
 // LEADERBOARD
 // ========================================
+//
+// IMPORTANT:
+// Leaderboard is sorted by TOTAL INVESTMENT.
+// Investment = voting power.
+//
+// ========================================
 
 function renderLeaderboard() {
 
     const sortedProducts =
         [...products].sort(
             (a, b) =>
-                b.price - a.price
+                b.totalInvestment -
+                a.totalInvestment
         );
 
 
@@ -332,6 +392,10 @@ function renderLeaderboard() {
 
     sortedProducts.forEach(
         (product, index) => {
+
+            product.change =
+                calculateProductChange(product);
+
 
             const row =
                 document.createElement("div");
@@ -353,6 +417,7 @@ function renderLeaderboard() {
                     #${index + 1}
                 </span>
 
+
                 <div class="leader-name">
 
                     <strong>
@@ -365,9 +430,11 @@ function renderLeaderboard() {
 
                 </div>
 
+
                 <strong class="leader-price">
-                    ${formatCurrency(product.price)}
+                    ${formatCurrency(product.totalInvestment)}
                 </strong>
+
 
                 <span class="leader-change ${changeClass}">
                     ${product.change >= 0 ? "+" : ""}
@@ -399,7 +466,9 @@ function openInvestModal(productId) {
 
 
     if (!selectedProduct) {
+
         return;
+
     }
 
 
@@ -427,6 +496,10 @@ function openInvestModal(productId) {
 
 }
 
+
+// ========================================
+// CLOSE INVEST MODAL
+// ========================================
 
 function closeInvestModal() {
 
@@ -484,13 +557,26 @@ document
 // ========================================
 // MAKE INVESTMENT
 // ========================================
+//
+// Investment does ONLY ONE thing:
+//
+// 1. Deduct money from user
+// 2. Add money to product's voting total
+// 3. Update user's portfolio
+// 4. Re-rank leaderboard
+//
+// PRICE NEVER CHANGES.
+//
+// ========================================
 
 confirmInvestment.addEventListener(
     "click",
     () => {
 
         if (!selectedProduct) {
+
             return;
+
         }
 
 
@@ -500,7 +586,9 @@ confirmInvestment.addEventListener(
             );
 
 
-        // Validation
+        // --------------------------------
+        // VALIDATION
+        // --------------------------------
 
         if (!amount || amount < 100) {
 
@@ -524,34 +612,42 @@ confirmInvestment.addEventListener(
         }
 
 
-        // Deduct balance
+        // --------------------------------
+        // DEDUCT USER BALANCE
+        // --------------------------------
 
         userBalance -= amount;
 
 
-        // Update product
+        // --------------------------------
+        // ADD INVESTMENT / VOTES
+        // --------------------------------
 
-        selectedProduct.investment += amount;
+        selectedProduct.totalInvestment +=
+            amount;
 
+
+        // --------------------------------
+        // PRICE DOES NOT CHANGE
+        // --------------------------------
 
         selectedProduct.price =
-            selectedProduct.startingPrice +
-            (
-                selectedProduct.investment / 100
+            selectedProduct.startingPrice;
+
+
+        // --------------------------------
+        // UPDATE CHANGE %
+        // --------------------------------
+
+        selectedProduct.change =
+            calculateProductChange(
+                selectedProduct
             );
 
 
-        selectedProduct.change =
-            (
-                (
-                    selectedProduct.price -
-                    selectedProduct.startingPrice
-                ) /
-                selectedProduct.startingPrice
-            ) * 100;
-
-
-        // Update portfolio
+        // --------------------------------
+        // UPDATE PORTFOLIO
+        // --------------------------------
 
         const existingInvestment =
             portfolio.find(
@@ -563,7 +659,8 @@ confirmInvestment.addEventListener(
 
         if (existingInvestment) {
 
-            existingInvestment.amount += amount;
+            existingInvestment.amount +=
+                amount;
 
         } else {
 
@@ -575,12 +672,17 @@ confirmInvestment.addEventListener(
                 productName:
                     selectedProduct.name,
 
-                amount: amount
+                amount:
+                    amount
 
             });
 
         }
 
+
+        // --------------------------------
+        // REFRESH EVERYTHING
+        // --------------------------------
 
         updateBalance();
 
@@ -593,8 +695,16 @@ confirmInvestment.addEventListener(
         renderPortfolio();
 
 
+        // --------------------------------
+        // CLOSE MODAL
+        // --------------------------------
+
         closeInvestModal();
 
+
+        // --------------------------------
+        // SUCCESS MESSAGE
+        // --------------------------------
 
         showToast(
             `₹${amount.toLocaleString("en-IN")} invested in ${selectedProduct.name}`
@@ -619,6 +729,13 @@ function updateBalance() {
 // ========================================
 // PORTFOLIO
 // ========================================
+//
+// Since investment is voting,
+// portfolio value = amount invested.
+//
+// No price multiplication.
+//
+// ========================================
 
 function renderPortfolio() {
 
@@ -640,8 +757,10 @@ function renderPortfolio() {
 
         `;
 
+
         portfolioValue.textContent =
             "₹0";
+
 
         return;
 
@@ -651,8 +770,7 @@ function renderPortfolio() {
     portfolioElement.innerHTML = "";
 
 
-    let total =
-        0;
+    let total = 0;
 
 
     portfolio.forEach(item => {
@@ -666,16 +784,15 @@ function renderPortfolio() {
 
 
         if (!product) {
+
             return;
+
         }
 
 
+        // Investment itself is the value.
         const currentValue =
-            item.amount *
-            (
-                product.price /
-                product.startingPrice
-            );
+            item.amount;
 
 
         total += currentValue;
@@ -695,6 +812,7 @@ function renderPortfolio() {
                 ${product.name.charAt(0)}
             </div>
 
+
             <div class="leader-name">
 
                 <strong>
@@ -703,13 +821,16 @@ function renderPortfolio() {
 
                 <span>
                     Invested ${formatCurrency(item.amount)}
+                    · Voting Power
                 </span>
 
             </div>
 
+
             <strong class="leader-price">
                 ${formatCurrency(currentValue)}
             </strong>
+
 
             <span class="leader-change">
                 ${product.change >= 0 ? "+" : ""}
@@ -760,27 +881,56 @@ document
     .querySelectorAll(".filter-button")
     .forEach(button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+        button.addEventListener("click", () => {
 
-                document
-                    .querySelectorAll(
-                        ".filter-button"
-                    )
-                    .forEach(btn =>
-                        btn.classList.remove(
-                            "active"
-                        )
-                    );
+            // Remove active from all buttons
+            document
+                .querySelectorAll(".filter-button")
+                .forEach(btn => {
+                    btn.classList.remove("active");
+                });
 
+            // Make clicked button active
+            button.classList.add("active");
 
-                button.classList.add(
-                    "active"
-                );
+            const filter =
+                button.textContent.trim();
+
+            // ALL
+            if (filter === "All") {
+
+                renderProducts(products);
 
             }
-        );
+
+            // TOP GAINERS
+            else if (filter === "Top Gainers") {
+
+                const sortedProducts =
+                    [...products].sort(
+                        (a, b) =>
+                            b.change - a.change
+                    );
+
+                renderProducts(sortedProducts);
+
+            }
+
+            // MOST FUNDED
+            else if (filter === "Most Funded") {
+
+                const sortedProducts =
+                    [...products].sort(
+                        (a, b) =>
+                            b.totalInvestment -
+                            a.totalInvestment
+                    );
+
+                renderProducts(sortedProducts);
+
+            }
+
+        });
 
     });
 
