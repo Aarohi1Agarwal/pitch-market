@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -50,6 +50,52 @@ def home():
 
     return "PitchMarket Backend is running!"
 
+# ========================================
+# TEAM LOGIN
+# ========================================
+
+@app.route("/api/login", methods=["POST"])
+def login():
+
+    data = request.get_json()
+
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+
+        return {
+            "success": False,
+            "message": "Username and password are required"
+        }, 400
+
+    team = Team.query.filter_by(
+        username=username
+    ).first()
+
+    if not team:
+
+        return {
+            "success": False,
+            "message": "Invalid username or password"
+        }, 401
+
+    if team.password != password:
+
+        return {
+            "success": False,
+            "message": "Invalid username or password"
+        }, 401
+
+    return {
+        "success": True,
+        "message": "Login successful",
+        "team": {
+            "id": team.id,
+            "username": team.username,
+            "team_name": team.team_name
+        }
+    }
 
 # ========================================
 # CREATE DEMO TEAM ACCOUNTS
