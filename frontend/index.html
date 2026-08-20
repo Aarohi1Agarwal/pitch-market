@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PitchMarket — Live Pitch Trading</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+
+    <header class="navbar">
+        <a class="brand" href="index.html" aria-label="PitchMarket home">
+            <div class="brand-icon">P</div>
+            <div>
+                <h1>PitchMarket</h1>
+                <span>LIVE PITCH TRADING</span>
+            </div>
+        </a>
+
+        <nav class="nav-links">
+            <a class="nav-link active" href="index.html">Market</a>
+            <a class="nav-link" href="#portfolio">Portfolio</a>
+        </nav>
+
+        <div class="user-section">
+            <div class="balance">
+                <span>AVAILABLE BALANCE</span>
+                <strong id="userBalance">₹10,000</strong>
+            </div>
+            <div class="avatar">P</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <div class="eyebrow">
+                    <span></span>
+                    PUBLIC REAL-TIME MARKET
+                </div>
+
+                <h2>
+                    Back the next
+                    <span>big idea.</span>
+                </h2>
+
+                <p>
+                    Explore every pitch on its own page and invest virtual capital
+                    in the ideas you believe in. No login required to browse.
+                </p>
+            </div>
+
+            <div class="market-summary">
+                <div class="summary-card">
+                    <span>LISTED IDEAS</span>
+                    <strong id="totalProducts">6</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>MARKET VOLUME</span>
+                    <strong id="marketVolume">₹9.9K</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>TOP MOVER</span>
+                    <strong id="topMover">+0.0%</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-header">
+            <div>
+                <span class="section-label">MARKET</span>
+                <h3 id="marketTitle">All Ideas</h3>
+            </div>
+
+            <div class="market-controls">
+                <button class="filter-button active" data-filter="all">All</button>
+                <button class="filter-button" data-filter="gainers">Top Gainers</button>
+                <button class="filter-button" data-filter="funded">Most Funded</button>
+            </div>
+        </section>
+
+        <section id="productsGrid" class="products-grid"></section>
+
+        <section id="portfolio" class="lower-grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <span class="section-label">RANKINGS</span>
+                        <h3>Market Leaders</h3>
+                    </div>
+                    <span class="live-indicator">● LIVE</span>
+                </div>
+
+                <div id="leaderboard" class="leaderboard"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <span class="section-label">YOUR POSITION</span>
+                        <h3>Portfolio</h3>
+                    </div>
+                    <strong id="portfolioValue">₹0</strong>
+                </div>
+
+                <div id="portfolioList" class="portfolio-list"></div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
