@@ -1,957 +1,373 @@
-// ========================================
-// PITCHMARKET FRONTEND
-// ========================================
-
-
-// ========================================
-// DEMO PRODUCT DATA
-// ========================================
-
-let products = [
-    {
-        id: 1,
-        name: "FoodOil IQ",
-        team: "Team Alpha",
-        price: 100,
-        startingPrice: 100,
-        initialInvestment: 2400,
-        totalInvestment: 2400,
-        change: 0
-    },
-
-    {
-        id: 2,
-        name: "EcoBottle",
-        team: "Green Labs",
-        price: 100,
-        startingPrice: 100,
-        initialInvestment: 1800,
-        totalInvestment: 1800,
-        change: 0
-    },
-
-    {
-        id: 3,
-        name: "Smart Hostel",
-        team: "DormTech",
-        price: 100,
-        startingPrice: 100,
-        initialInvestment: 1200,
-        totalInvestment: 1200,
-        change: 0
-    },
-
-    {
-        id: 4,
-        name: "FarmSense",
-        team: "AgriVision",
-        price: 100,
-        startingPrice: 100,
-        initialInvestment: 900,
-        totalInvestment: 900,
-        change: 0
-    },
-
-    {
-        id: 5,
-        name: "MediTrack",
-        team: "HealthX",
-        price: 100,
-        startingPrice: 100,
-        initialInvestment: 2100,
-        totalInvestment: 2100,
-        change: 0
-    },
-
-    {
-        id: 6,
-        name: "StudyAI",
-        team: "EduNova",
-        price: 100,
-        startingPrice: 100,
-        initialInvestment: 1500,
-        totalInvestment: 1500,
-        change: 0
-    }
+const PRODUCTS = [
+    {id: 1, slug: "foodoil-iq", name: "FoodOil IQ", team: "Team Alpha", initialInvestment: 2400},
+    {id: 2, slug: "ecobottle", name: "EcoBottle", team: "Green Labs", initialInvestment: 1800},
+    {id: 3, slug: "smart-hostel", name: "Smart Hostel", team: "DormTech", initialInvestment: 1200},
+    {id: 4, slug: "farmsense", name: "FarmSense", team: "AgriVision", initialInvestment: 900},
+    {id: 5, slug: "meditrack", name: "MediTrack", team: "HealthX", initialInvestment: 2100},
+    {id: 6, slug: "studyai", name: "StudyAI", team: "EduNova", initialInvestment: 1500}
 ];
 
+const STORAGE_KEY = "pitchmarket-state-v1";
 
-// ========================================
-// USER DATA
-// ========================================
+function loadState() {
+    const saved = localStorage.getItem(STORAGE_KEY);
 
-let userBalance = 10000;
+    if (!saved) {
+        return {
+            balance: 10000,
+            investments: {}
+        };
+    }
 
-let selectedProduct = null;
-
-let portfolio = [];
-
-
-// ========================================
-// DOM ELEMENTS
-// ========================================
-
-const productsGrid =
-    document.getElementById("productsGrid");
-
-const leaderboard =
-    document.getElementById("leaderboard");
-
-const userBalanceElement =
-    document.getElementById("userBalance");
-
-const totalProductsElement =
-    document.getElementById("totalProducts");
-
-const marketVolumeElement =
-    document.getElementById("marketVolume");
-
-const topMoverElement =
-    document.getElementById("topMover");
-
-const investModal =
-    document.getElementById("investModal");
-
-const closeModal =
-    document.getElementById("closeModal");
-
-const modalProductName =
-    document.getElementById("modalProductName");
-
-const modalProductPrice =
-    document.getElementById("modalProductPrice");
-
-const investmentAmount =
-    document.getElementById("investmentAmount");
-
-const confirmInvestment =
-    document.getElementById("confirmInvestment");
-
-const portfolioElement =
-    document.getElementById("portfolio");
-
-const portfolioValue =
-    document.getElementById("portfolioValue");
-
-const toast =
-    document.getElementById("toast");
-
-
-// ========================================
-// FORMAT CURRENCY
-// ========================================
-
-function formatCurrency(value) {
-
-    return "₹" + Number(value).toLocaleString("en-IN");
-
+    try {
+        return JSON.parse(saved);
+    } catch {
+        return {
+            balance: 10000,
+            investments: {}
+        };
+    }
 }
 
+function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
 
-// ========================================
-// FORMAT COMPACT CURRENCY
-// ========================================
+function formatCurrency(value) {
+    return "₹" + Number(value).toLocaleString("en-IN");
+}
 
 function formatCompactCurrency(value) {
-
     if (value >= 1000000) {
-
-        return (
-            "₹" +
-            (value / 1000000).toFixed(1) +
-            "M"
-        );
-
+        return "₹" + (value / 1000000).toFixed(1) + "M";
     }
 
     if (value >= 1000) {
-
-        return (
-            "₹" +
-            (value / 1000).toFixed(1) +
-            "K"
-        );
-
+        return "₹" + (value / 1000).toFixed(1) + "K";
     }
 
     return formatCurrency(value);
-
 }
 
+function getProductInvestment(product) {
+    const state = loadState();
+    return product.initialInvestment + Number(state.investments[product.id] || 0);
+}
 
-// ========================================
-// CALCULATE PRODUCT CHANGE
-// ========================================
-//
-// Investment is voting power.
-// Price does NOT change.
-//
-// Example:
-//
-// Initial investment = ₹1800
-// New total investment = ₹2300
-//
-// Change = +27.8%
-//
-// ========================================
+function getProductChange(product) {
+    return ((getProductInvestment(product) - product.initialInvestment) / product.initialInvestment) * 100;
+}
 
-function calculateProductChange(product) {
+function updateBalanceElements() {
+    const state = loadState();
 
-    if (product.initialInvestment <= 0) {
+    document.querySelectorAll("#userBalance, .userBalance").forEach((element) => {
+        element.textContent = formatCurrency(state.balance);
+    });
+}
 
-        return 0;
+function showToast(message) {
+    const toast = document.getElementById("toast");
 
+    if (!toast) {
+        return;
     }
 
-    return (
-        (
-            product.totalInvestment -
-            product.initialInvestment
-        ) /
-        product.initialInvestment
-    ) * 100;
+    toast.textContent = message;
+    toast.classList.add("show");
 
+    clearTimeout(window.pitchMarketToastTimer);
+
+    window.pitchMarketToastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2600);
 }
 
+function renderMarket(filter = "all") {
+    const grid = document.getElementById("productsGrid");
 
-// ========================================
-// RENDER PRODUCTS
-// ========================================
+    if (!grid) {
+        return;
+    }
 
-function renderProducts(data = products) {
+    let products = [...PRODUCTS];
 
-    productsGrid.innerHTML = "";
+    products.forEach((product) => {
+        product.totalInvestment = getProductInvestment(product);
+        product.change = getProductChange(product);
+    });
 
+    if (filter === "gainers") {
+        products.sort((a, b) => b.change - a.change);
+    }
 
-    data.forEach(product => {
+    if (filter === "funded") {
+        products.sort((a, b) => b.totalInvestment - a.totalInvestment);
+    }
 
-        // Keep change updated
-        product.change =
-            calculateProductChange(product);
+    grid.innerHTML = products.map((product) => {
+        const trendClass = product.change >= 0 ? "up" : "down";
+        const trendSymbol = product.change >= 0 ? "↑" : "↓";
 
-
-        const trendClass =
-            product.change >= 0
-                ? "up"
-                : "down";
-
-
-        const trendSymbol =
-            product.change >= 0
-                ? "↑"
-                : "↓";
-
-
-        const card =
-            document.createElement("article");
-
-
-        card.className =
-            "product-card";
-
-
-        card.innerHTML = `
-
-            <div class="product-top">
-
-                <div class="product-logo">
-                    ${product.name.charAt(0)}
+        return `
+            <article class="product-card">
+                <div class="product-top">
+                    <div class="product-logo">${product.name.charAt(0)}</div>
+                    <span class="trend ${trendClass}">
+                        ${trendSymbol} ${Math.abs(product.change).toFixed(1)}%
+                    </span>
                 </div>
-
-                <span class="trend ${trendClass}">
-                    ${trendSymbol}
-                    ${Math.abs(product.change).toFixed(1)}%
-                </span>
-
-            </div>
-
-
-            <div>
-
-                <h4 class="product-name">
-                    ${product.name}
-                </h4>
-
-                <p class="team-name">
-                    ${product.team}
-                </p>
-
-            </div>
-
-
-            <div class="price-row">
 
                 <div>
-
-                    <span class="price-label">
-                        CURRENT PRICE
-                    </span>
-
-                    <strong class="current-price">
-                        ${formatCurrency(product.price)}
-                    </strong>
-
+                    <h4 class="product-name">${product.name}</h4>
+                    <p class="team-name">${product.team}</p>
                 </div>
 
+                <div class="price-row">
+                    <div>
+                        <span class="price-label">CURRENT PRICE</span>
+                        <strong class="current-price">₹100</strong>
+                    </div>
 
-                <div class="investment-info">
-
-                    <span>
-                        TOTAL INVESTMENT
-                    </span>
-
-                    <strong>
-                        ${formatCurrency(product.totalInvestment)}
-                    </strong>
-
+                    <div class="investment-info">
+                        <span>TOTAL INVESTMENT</span>
+                        <strong>${formatCurrency(product.totalInvestment)}</strong>
+                    </div>
                 </div>
 
-            </div>
-
-
-            <div class="product-bottom">
-
-                <button
-                    class="invest-button"
-                    onclick="openInvestModal(${product.id})"
-                >
-                    INVEST IN IDEA
-                </button>
-
-            </div>
-
+                <div class="product-bottom">
+                    <a class="invest-button" href="products/${product.slug}.html">
+                        VIEW PITCH
+                    </a>
+                </div>
+            </article>
         `;
+    }).join("");
 
+    const title = document.getElementById("marketTitle");
 
-        productsGrid.appendChild(card);
-
-    });
-
-
-    totalProductsElement.textContent =
-        products.length;
-
+    if (title) {
+        title.textContent =
+            filter === "gainers" ? "Top Gainers" :
+            filter === "funded" ? "Most Funded" :
+            "All Ideas";
+    }
 }
 
+function renderSummary() {
+    const totalProducts = document.getElementById("totalProducts");
+    const marketVolume = document.getElementById("marketVolume");
+    const topMover = document.getElementById("topMover");
 
-// ========================================
-// MARKET SUMMARY
-// ========================================
+    if (!totalProducts || !marketVolume || !topMover) {
+        return;
+    }
 
-function updateMarketSummary() {
-
-    const totalVolume =
-        products.reduce(
-            (sum, product) =>
-                sum + product.totalInvestment,
-            0
-        );
-
-
-    const topMover =
-        Math.max(
-            ...products.map(
-                product =>
-                    calculateProductChange(product)
-            )
-        );
-
-
-    marketVolumeElement.textContent =
-        formatCompactCurrency(totalVolume);
-
-
-    topMoverElement.textContent =
-        `${topMover >= 0 ? "+" : ""}${topMover.toFixed(1)}%`;
-
-}
-
-
-// ========================================
-// LEADERBOARD
-// ========================================
-//
-// IMPORTANT:
-// Leaderboard is sorted by TOTAL INVESTMENT.
-// Investment = voting power.
-//
-// ========================================
-
-function renderLeaderboard() {
-
-    const sortedProducts =
-        [...products].sort(
-            (a, b) =>
-                b.totalInvestment -
-                a.totalInvestment
-        );
-
-
-    leaderboard.innerHTML = "";
-
-
-    sortedProducts.forEach(
-        (product, index) => {
-
-            product.change =
-                calculateProductChange(product);
-
-
-            const row =
-                document.createElement("div");
-
-
-            row.className =
-                "leaderboard-row";
-
-
-            const changeClass =
-                product.change >= 0
-                    ? "up"
-                    : "down";
-
-
-            row.innerHTML = `
-
-                <span class="rank">
-                    #${index + 1}
-                </span>
-
-
-                <div class="leader-name">
-
-                    <strong>
-                        ${product.name}
-                    </strong>
-
-                    <span>
-                        ${product.team}
-                    </span>
-
-                </div>
-
-
-                <strong class="leader-price">
-                    ${formatCurrency(product.totalInvestment)}
-                </strong>
-
-
-                <span class="leader-change ${changeClass}">
-                    ${product.change >= 0 ? "+" : ""}
-                    ${product.change.toFixed(1)}%
-                </span>
-
-            `;
-
-
-            leaderboard.appendChild(row);
-
-        }
+    const totalVolume = PRODUCTS.reduce(
+        (sum, product) => sum + getProductInvestment(product),
+        0
     );
 
+    const bestChange = Math.max(...PRODUCTS.map(getProductChange));
+
+    totalProducts.textContent = PRODUCTS.length;
+    marketVolume.textContent = formatCompactCurrency(totalVolume);
+    topMover.textContent = `${bestChange >= 0 ? "+" : ""}${bestChange.toFixed(1)}%`;
 }
 
+function renderLeaderboard() {
+    const leaderboard = document.getElementById("leaderboard");
 
-// ========================================
-// INVEST MODAL
-// ========================================
-
-function openInvestModal(productId) {
-
-    selectedProduct =
-        products.find(
-            product =>
-                product.id === productId
-        );
-
-
-    if (!selectedProduct) {
-
+    if (!leaderboard) {
         return;
-
     }
 
-
-    modalProductName.textContent =
-        selectedProduct.name;
-
-
-    modalProductPrice.textContent =
-        formatCurrency(
-            selectedProduct.price
-        );
-
-
-    investmentAmount.value = "";
-
-
-    investModal.classList.add("show");
-
-
-    setTimeout(() => {
-
-        investmentAmount.focus();
-
-    }, 100);
-
-}
-
-
-// ========================================
-// CLOSE INVEST MODAL
-// ========================================
-
-function closeInvestModal() {
-
-    investModal.classList.remove("show");
-
-    selectedProduct = null;
-
-}
-
-
-closeModal.addEventListener(
-    "click",
-    closeInvestModal
-);
-
-
-investModal.addEventListener(
-    "click",
-    event => {
-
-        if (
-            event.target ===
-            investModal
-        ) {
-
-            closeInvestModal();
-
-        }
-
-    }
-);
-
-
-// ========================================
-// QUICK INVESTMENT BUTTONS
-// ========================================
-
-document
-    .querySelectorAll(".quick-amounts button")
-    .forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                investmentAmount.value =
-                    button.dataset.amount;
-
-            }
-        );
-
-    });
-
-
-// ========================================
-// MAKE INVESTMENT
-// ========================================
-//
-// Investment does ONLY ONE thing:
-//
-// 1. Deduct money from user
-// 2. Add money to product's voting total
-// 3. Update user's portfolio
-// 4. Re-rank leaderboard
-//
-// PRICE NEVER CHANGES.
-//
-// ========================================
-
-confirmInvestment.addEventListener(
-    "click",
-    () => {
-
-        if (!selectedProduct) {
-
-            return;
-
-        }
-
-
-        const amount =
-            Number(
-                investmentAmount.value
-            );
-
-
-        // --------------------------------
-        // VALIDATION
-        // --------------------------------
-
-        if (!amount || amount < 100) {
-
-            showToast(
-                "Minimum investment is ₹100"
-            );
-
-            return;
-
-        }
-
-
-        if (amount > userBalance) {
-
-            showToast(
-                "Insufficient balance"
-            );
-
-            return;
-
-        }
-
-
-        // --------------------------------
-        // DEDUCT USER BALANCE
-        // --------------------------------
-
-        userBalance -= amount;
-
-
-        // --------------------------------
-        // ADD INVESTMENT / VOTES
-        // --------------------------------
-
-        selectedProduct.totalInvestment +=
-            amount;
-
-
-        // --------------------------------
-        // PRICE DOES NOT CHANGE
-        // --------------------------------
-
-        selectedProduct.price =
-            selectedProduct.startingPrice;
-
-
-        // --------------------------------
-        // UPDATE CHANGE %
-        // --------------------------------
-
-        selectedProduct.change =
-            calculateProductChange(
-                selectedProduct
-            );
-
-
-        // --------------------------------
-        // UPDATE PORTFOLIO
-        // --------------------------------
-
-        const existingInvestment =
-            portfolio.find(
-                item =>
-                    item.productId ===
-                    selectedProduct.id
-            );
-
-
-        if (existingInvestment) {
-
-            existingInvestment.amount +=
-                amount;
-
-        } else {
-
-            portfolio.push({
-
-                productId:
-                    selectedProduct.id,
-
-                productName:
-                    selectedProduct.name,
-
-                amount:
-                    amount
-
-            });
-
-        }
-
-
-        // --------------------------------
-        // REFRESH EVERYTHING
-        // --------------------------------
-
-        updateBalance();
-
-        renderProducts();
-
-        renderLeaderboard();
-
-        updateMarketSummary();
-
-        renderPortfolio();
-
-
-        // --------------------------------
-        // CLOSE MODAL
-        // --------------------------------
-
-        closeInvestModal();
-
-
-        // --------------------------------
-        // SUCCESS MESSAGE
-        // --------------------------------
-
-        showToast(
-            `₹${amount.toLocaleString("en-IN")} invested in ${selectedProduct.name}`
-        );
-
-    }
-);
-
-
-// ========================================
-// BALANCE
-// ========================================
-
-function updateBalance() {
-
-    userBalanceElement.textContent =
-        formatCurrency(userBalance);
-
-}
-
-
-// ========================================
-// PORTFOLIO
-// ========================================
-//
-// Since investment is voting,
-// portfolio value = amount invested.
-//
-// No price multiplication.
-//
-// ========================================
-
-function renderPortfolio() {
-
-    if (portfolio.length === 0) {
-
-        portfolioElement.innerHTML = `
-
-            <div class="empty-icon">
-                +
+    const sorted = [...PRODUCTS]
+        .map((product) => ({
+            ...product,
+            totalInvestment: getProductInvestment(product),
+            change: getProductChange(product)
+        }))
+        .sort((a, b) => b.totalInvestment - a.totalInvestment);
+
+    leaderboard.innerHTML = sorted.map((product, index) => `
+        <div class="leaderboard-row">
+            <span class="rank">#${index + 1}</span>
+
+            <div class="leader-name">
+                <strong>${product.name}</strong>
+                <span>${product.team}</span>
             </div>
 
-            <strong>
-                No investments yet
+            <strong class="leader-price">
+                ${formatCurrency(product.totalInvestment)}
             </strong>
 
-            <p>
-                Invest in an idea to build your portfolio.
-            </p>
+            <span class="leader-change ${product.change >= 0 ? "up" : "down"}">
+                ${product.change >= 0 ? "+" : ""}${product.change.toFixed(1)}%
+            </span>
+        </div>
+    `).join("");
+}
 
-        `;
+function renderPortfolio() {
+    const list = document.getElementById("portfolioList");
+    const value = document.getElementById("portfolioValue");
 
-
-        portfolioValue.textContent =
-            "₹0";
-
-
+    if (!list || !value) {
         return;
-
     }
 
+    const state = loadState();
 
-    portfolioElement.innerHTML = "";
+    const entries = Object.entries(state.investments)
+        .filter(([, amount]) => Number(amount) > 0);
 
+    if (entries.length === 0) {
+        value.textContent = "₹0";
+
+        list.innerHTML = `
+            <div class="portfolio-empty">
+                <div class="empty-icon">+</div>
+                <strong>No investments yet</strong>
+                <p>Open any pitch to build your portfolio.</p>
+            </div>
+        `;
+
+        return;
+    }
 
     let total = 0;
 
-
-    portfolio.forEach(item => {
-
-        const product =
-            products.find(
-                p =>
-                    p.id ===
-                    item.productId
-            );
-
+    list.innerHTML = entries.map(([productId, amount]) => {
+        const product = PRODUCTS.find((item) => item.id === Number(productId));
 
         if (!product) {
-
-            return;
-
+            return "";
         }
 
+        total += Number(amount);
 
-        // Investment itself is the value.
-        const currentValue =
-            item.amount;
+        return `
+            <a class="leaderboard-row portfolio-row" href="products/${product.slug}.html">
+                <div class="product-logo small">${product.name.charAt(0)}</div>
 
+                <div class="leader-name">
+                    <strong>${product.name}</strong>
+                    <span>Invested ${formatCurrency(amount)} · Voting Power</span>
+                </div>
 
-        total += currentValue;
+                <strong class="leader-price">${formatCurrency(amount)}</strong>
 
-
-        const row =
-            document.createElement("div");
-
-
-        row.className =
-            "leaderboard-row";
-
-
-        row.innerHTML = `
-
-            <div class="product-logo">
-                ${product.name.charAt(0)}
-            </div>
-
-
-            <div class="leader-name">
-
-                <strong>
-                    ${product.name}
-                </strong>
-
-                <span>
-                    Invested ${formatCurrency(item.amount)}
-                    · Voting Power
+                <span class="leader-change up">
+                    +${getProductChange(product).toFixed(1)}%
                 </span>
-
-            </div>
-
-
-            <strong class="leader-price">
-                ${formatCurrency(currentValue)}
-            </strong>
-
-
-            <span class="leader-change">
-                ${product.change >= 0 ? "+" : ""}
-                ${product.change.toFixed(1)}%
-            </span>
-
+            </a>
         `;
+    }).join("");
 
-
-        portfolioElement.appendChild(row);
-
-    });
-
-
-    portfolioValue.textContent =
-        formatCurrency(total);
-
+    value.textContent = formatCurrency(total);
 }
 
+function initMarketPage() {
+    if (!document.getElementById("productsGrid")) {
+        return;
+    }
 
-// ========================================
-// TOAST
-// ========================================
-
-function showToast(message) {
-
-    toast.textContent =
-        message;
-
-
-    toast.classList.add("show");
-
-
-    setTimeout(() => {
-
-        toast.classList.remove("show");
-
-    }, 2500);
-
-}
-
-
-// ========================================
-// FILTER BUTTONS
-// ========================================
-
-document
-    .querySelectorAll(".filter-button")
-    .forEach(button => {
-
-        button.addEventListener("click", () => {
-
-            // Remove active from all buttons
-            document
-                .querySelectorAll(".filter-button")
-                .forEach(btn => {
-                    btn.classList.remove("active");
-                });
-
-            // Make clicked button active
-            button.classList.add("active");
-
-            const filter =
-                button.textContent.trim();
-
-            // ALL
-            if (filter === "All") {
-
-                renderProducts(products);
-
-            }
-
-            // TOP GAINERS
-            else if (filter === "Top Gainers") {
-
-                const sortedProducts =
-                    [...products].sort(
-                        (a, b) =>
-                            b.change - a.change
-                    );
-
-                renderProducts(sortedProducts);
-
-            }
-
-            // MOST FUNDED
-            else if (filter === "Most Funded") {
-
-                const sortedProducts =
-                    [...products].sort(
-                        (a, b) =>
-                            b.totalInvestment -
-                            a.totalInvestment
-                    );
-
-                renderProducts(sortedProducts);
-
-            }
-
-        });
-
-    });
-
-
-// ========================================
-// INITIAL RENDER
-// ========================================
-
-function initializeApp() {
-
-    updateBalance();
-
-    renderProducts();
-
+    updateBalanceElements();
+    renderSummary();
+    renderMarket();
     renderLeaderboard();
-
-    updateMarketSummary();
-
     renderPortfolio();
 
+    document.querySelectorAll(".filter-button").forEach((button) => {
+        button.addEventListener("click", () => {
+            document.querySelectorAll(".filter-button").forEach((item) => {
+                item.classList.remove("active");
+            });
+
+            button.classList.add("active");
+            renderMarket(button.dataset.filter);
+        });
+    });
 }
 
+function initProductPage() {
+    if (!window.PITCHMARKET_PRODUCT_ID) {
+        return;
+    }
 
-initializeApp();
+    const product = PRODUCTS.find(
+        (item) => item.id === Number(window.PITCHMARKET_PRODUCT_ID)
+    );
+
+    if (!product) {
+        return;
+    }
+
+    const amountInput = document.getElementById("investmentAmount");
+    const confirmButton = document.getElementById("confirmInvestment");
+
+    function refreshProductStats() {
+        const totalInvestment = document.getElementById("totalInvestment");
+        const productChange = document.getElementById("productChange");
+
+        if (totalInvestment) {
+            totalInvestment.textContent =
+                formatCurrency(getProductInvestment(product));
+        }
+
+        if (productChange) {
+            const change = getProductChange(product);
+
+            productChange.textContent =
+                `${change >= 0 ? "+" : ""}${change.toFixed(1)}%`;
+
+            productChange.className = change >= 0 ? "up" : "down";
+        }
+
+        updateBalanceElements();
+    }
+
+    document.querySelectorAll(".quick-amounts button").forEach((button) => {
+        button.addEventListener("click", () => {
+            amountInput.value = button.dataset.amount;
+            amountInput.focus();
+        });
+    });
+
+    confirmButton.addEventListener("click", () => {
+        const amount = Number(amountInput.value);
+        const state = loadState();
+
+        if (!amount || amount < 100) {
+            showToast("Minimum investment is ₹100.");
+            return;
+        }
+
+        if (amount > state.balance) {
+            showToast("Insufficient balance.");
+            return;
+        }
+
+        state.balance -= amount;
+        state.investments[product.id] =
+            Number(state.investments[product.id] || 0) + amount;
+
+        saveState(state);
+
+        amountInput.value = "";
+        refreshProductStats();
+
+        showToast(
+            `${formatCurrency(amount)} invested in ${product.name}.`
+        );
+    });
+
+    refreshProductStats();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    initMarketPage();
+    initProductPage();
+});

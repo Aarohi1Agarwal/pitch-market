@@ -3,70 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>PitchMarket — Live Pitch Trading</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
-
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-    <!-- Background -->
     <div class="background-glow glow-one"></div>
     <div class="background-glow glow-two"></div>
 
-    <!-- NAVBAR -->
     <header class="navbar">
-
-        <div class="brand">
+        <a class="brand" href="index.html" aria-label="PitchMarket home">
             <div class="brand-icon">P</div>
-
             <div>
                 <h1>PitchMarket</h1>
                 <span>LIVE PITCH TRADING</span>
             </div>
-        </div>
+        </a>
 
-        <div class="market-status">
-            <span class="status-dot"></span>
-            MARKET LIVE
-        </div>
+        <nav class="nav-links">
+            <a class="nav-link active" href="index.html">Market</a>
+            <a class="nav-link" href="#portfolio">Portfolio</a>
+        </nav>
 
         <div class="user-section">
-
             <div class="balance">
                 <span>AVAILABLE BALANCE</span>
                 <strong id="userBalance">₹10,000</strong>
             </div>
-
-            <div class="avatar">
-                A
-            </div>
-
+            <div class="avatar">P</div>
         </div>
-
     </header>
 
-
-    <!-- MAIN -->
     <main class="container">
-
-        <!-- HERO -->
         <section class="hero">
-
             <div class="hero-content">
-
                 <div class="eyebrow">
                     <span></span>
-                    REAL-TIME MARKET
+                    PUBLIC REAL-TIME MARKET
                 </div>
 
                 <h2>
@@ -75,15 +50,12 @@
                 </h2>
 
                 <p>
-                    Invest your virtual capital in the pitches you believe in.
-                    Watch market prices move with the crowd.
+                    Explore every pitch on its own page and invest virtual capital
+                    in the ideas you believe in. No login required to browse.
                 </p>
-
             </div>
 
-
             <div class="market-summary">
-
                 <div class="summary-card">
                     <span>LISTED IDEAS</span>
                     <strong id="totalProducts">6</strong>
@@ -91,188 +63,60 @@
 
                 <div class="summary-card">
                     <span>MARKET VOLUME</span>
-                    <strong id="marketVolume">₹24.8K</strong>
+                    <strong id="marketVolume">₹9.9K</strong>
                 </div>
 
                 <div class="summary-card">
                     <span>TOP MOVER</span>
-                    <strong id="topMover">+18.4%</strong>
+                    <strong id="topMover">+0.0%</strong>
                 </div>
-
             </div>
-
         </section>
 
-
-        <!-- MARKET HEADER -->
         <section class="section-header">
-
             <div>
                 <span class="section-label">MARKET</span>
-                <h3>Live Ideas</h3>
+                <h3 id="marketTitle">All Ideas</h3>
             </div>
 
             <div class="market-controls">
-
-                <button class="filter-button active">
-                    All
-                </button>
-
-                <button class="filter-button">
-                    Top Gainers
-                </button>
-
-                <button class="filter-button">
-                    Most Funded
-                </button>
-
+                <button class="filter-button active" data-filter="all">All</button>
+                <button class="filter-button" data-filter="gainers">Top Gainers</button>
+                <button class="filter-button" data-filter="funded">Most Funded</button>
             </div>
-
         </section>
 
+        <section id="productsGrid" class="products-grid"></section>
 
-        <!-- PRODUCTS -->
-        <section id="productsGrid" class="products-grid">
-
-            <!-- Products are rendered by JavaScript -->
-
-        </section>
-
-
-        <!-- LOWER GRID -->
-        <section class="lower-grid">
-
-            <!-- LEADERBOARD -->
+        <section id="portfolio" class="lower-grid">
             <div class="panel">
-
                 <div class="panel-header">
-
                     <div>
                         <span class="section-label">RANKINGS</span>
                         <h3>Market Leaders</h3>
                     </div>
-
-                    <span class="live-indicator">
-                        ● LIVE
-                    </span>
-
+                    <span class="live-indicator">● LIVE</span>
                 </div>
 
-                <div id="leaderboard" class="leaderboard">
-
-                    <!-- Leaderboard rendered by JS -->
-
-                </div>
-
+                <div id="leaderboard" class="leaderboard"></div>
             </div>
 
-
-            <!-- PORTFOLIO -->
             <div class="panel">
-
                 <div class="panel-header">
-
                     <div>
                         <span class="section-label">YOUR POSITION</span>
                         <h3>Portfolio</h3>
                     </div>
-
-                    <span id="portfolioValue">
-                        ₹0
-                    </span>
-
+                    <strong id="portfolioValue">₹0</strong>
                 </div>
 
-                <div id="portfolio" class="portfolio-empty">
-
-                    <div class="empty-icon">
-                        +
-                    </div>
-
-                    <strong>No investments yet</strong>
-
-                    <p>
-                        Invest in an idea to build your portfolio.
-                    </p>
-
-                </div>
-
+                <div id="portfolioList" class="portfolio-list"></div>
             </div>
-
         </section>
-
     </main>
 
-
-    <!-- INVEST MODAL -->
-    <div id="investModal" class="modal-overlay">
-
-        <div class="invest-modal">
-
-            <button id="closeModal" class="close-modal">
-                ×
-            </button>
-
-            <span class="section-label">INVEST IN</span>
-
-            <h3 id="modalProductName">
-                Product Name
-            </h3>
-
-            <div class="modal-price">
-                <span>Current Price</span>
-                <strong id="modalProductPrice">
-                    ₹100
-                </strong>
-            </div>
-
-            <label for="investmentAmount">
-                Investment Amount
-            </label>
-
-            <div class="amount-input">
-
-                <span>₹</span>
-
-                <input
-                    id="investmentAmount"
-                    type="number"
-                    min="100"
-                    step="100"
-                    placeholder="Enter amount"
-                >
-
-            </div>
-
-            <div class="quick-amounts">
-
-                <button data-amount="500">₹500</button>
-                <button data-amount="1000">₹1K</button>
-                <button data-amount="2500">₹2.5K</button>
-                <button data-amount="5000">₹5K</button>
-
-            </div>
-
-            <button id="confirmInvestment" class="invest-confirm">
-                Confirm Investment
-            </button>
-
-            <p class="modal-note">
-                This is a virtual investment for the pitch simulation.
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <!-- TOAST -->
-    <div id="toast" class="toast">
-        Investment successful
-    </div>
-
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="app.js"></script>
-
 </body>
 </html>
